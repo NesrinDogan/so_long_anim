@@ -1,0 +1,799 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   lolo                                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/10 19:06:25 by nedogan           #+#    #+#             */
+/*   Updated: 2025/08/12 21:15:44 by nedogan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "so_long.h"
+
+void	load_images(t_game *g)
+{
+	int	w;
+	int	h;
+
+	if (g->img_wall)
+		mlx_destroy_image(g->mlx, g->img_wall);
+	if (g->img_floor)
+		mlx_destroy_image(g->mlx, g->img_floor);
+	if (g->img_player)
+		mlx_destroy_image(g->mlx, g->img_player);
+	if (g->img_enemy)
+		mlx_destroy_image(g->mlx, g->img_enemy);
+	if (g->img_exit)
+		mlx_destroy_image(g->mlx, g->img_exit);
+	if (g->img_coin)
+		mlx_destroy_image(g->mlx, g->img_coin);
+	g->img_wall = mlx_xpm_file_to_image(g->mlx, "textures/wall.xpm", &w, &h);
+	g->img_floor = mlx_xpm_file_to_image(g->mlx, "textures/floor.xpm", &w, &h);
+	g->img_enemy = mlx_xpm_file_to_image(g->mlx, "textures/enemy.xpm", &w, &h);
+	g->img_player = mlx_xpm_file_to_image(g->mlx, "textures/player_1.xpm", &w,
+			&h);
+	g->img_coin = mlx_xpm_file_to_image(g->mlx, "textures/coin.xpm", &w, &h);
+	g->img_exit = mlx_xpm_file_to_image(g->mlx, "textures/exit.xpm", &w, &h);
+	if (!g->img_wall || !g->img_floor || !g->img_player || !g->img_coin
+		|| !g->img_exit || !g->img_enemy)
+		ft_error("Images does not uploaded!");
+}
+void	draw_tile(t_game *g, void *img, int x, int y)
+{
+	mlx_put_image_to_window(g->mlx, g->win, img, x * TILE_SIZE, y * TILE_SIZE);
+}
+
+static void	draw_tile_type(t_game *g, int x, int y)
+{
+	if (g->map[y][x] == WALL)
+		draw_tile(g, g->img_wall, x, y);
+	else
+		draw_tile(g, g->img_floor, x, y);
+	if (g->map[y][x] == COIN)
+		draw_tile(g, g->img_coin, x, y);
+	else if (g->map[y][x] == EXIT)
+		draw_tile(g, g->img_exit, x, y);
+	if (g->map[y][x] == ENEMY)
+		draw_tile(g, g->img_enemy, x, y);
+	if (x == g->player_x && y == g->player_y)
+        draw_tile(g, g->player_frames[g->current_frame], x, y);
+
+}
+
+void	draw_map(t_game *g)
+{
+	int	x;
+	int	y;
+
+	load_images(g);
+	y = 0;
+	while (g->map[y])
+	{
+		x = 0;
+		while (g->map[y][x])
+		{
+			draw_tile_type(g, x, y);
+			x++;
+		}
+		y++;
+	}
+}
+#include "so_long.h"
+
+void	free_map(char **map)
+{
+	int	i;
+
+	i = 0;
+	while (map && map[i])
+		free(map[i++]);
+	free(map);
+}
+
+void	free_images(t_game *g)
+{
+	printf("free images\n");
+	if (g->img_wall)
+		mlx_destroy_image(g->mlx, g->img_wall);
+	if (g->img_floor)
+		mlx_destroy_image(g->mlx, g->img_floor);
+	if (g->img_player)
+		mlx_destroy_image(g->mlx, g->img_player);
+	if (g->img_enemy)
+		mlx_destroy_image(g->mlx, g->img_enemy);
+	if (g->img_exit)
+		mlx_destroy_image(g->mlx, g->img_exit);
+	if (g->img_coin)
+		mlx_destroy_image(g->mlx, g->img_coin);
+
+	if (g->player_frames[0])
+		mlx_destroy_image(g->mlx, g->player_frames[0]);
+	if (g->player_frames[1])
+		mlx_destroy_image(g->mlx, g->player_frames[1]);
+	if (g->player_frames[2])
+		mlx_destroy_image(g->mlx, g->player_frames[2]);
+}
+
+int	exit_game(t_game *g)
+{
+	if (g->map)
+		free_map(g->map);
+	mlx_loop_end(g->mlx);
+	free_images(g); // Önce tüm img’leri temizle
+	if (g->win)
+	{
+		printf("window destroyed \n");
+		mlx_destroy_window(g->mlx, g->win);
+	}
+	if (g->mlx)
+	{
+		printf("display destroyed \n");
+		mlx_destroy_display(g->mlx);
+		free(g->mlx);
+	}
+
+	exit(0);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/10 19:06:34 by nedogan           #+#    #+#             */
+/*   Updated: 2025/08/12 21:08:30 by nedogan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "so_long.h"
+
+static int	close_game(t_game *game)
+{
+	exit_game(game);
+	return (0);
+}
+
+int	main(int argc, char **argv)
+{
+	t_game	game;
+
+	ft_memset(&game, 0, sizeof(t_game));
+
+    game.current_frame = 0; // animasyon başlangıç frame’i
+
+	if (argc != 2)
+		ft_error("Usage: ./so_long <map.ber>");
+	if (!ft_strnstr(argv[1], ".ber", ft_strlen(argv[1])))
+		ft_error("Map file name has to finish with .ber");
+	load_map(&game, argv[1]);
+	find_player(&game);
+	if (!check_path(&game))
+	{
+		ft_error("Invalid path in map!");
+		exit_game(&game);
+	}
+	game_init(&game);
+	load_player_frames(&game);
+	draw_map(&game); // haritayı çizimi
+	mlx_key_hook(game.win, handle_key, &game);
+	mlx_hook(game.win, 17, 0, close_game, &game);
+	mlx_loop_hook(game.mlx, animate_player, &game);
+	mlx_loop(game.mlx);
+	close_game(&game);
+
+	return (0);
+}
+
+void	game_init(t_game *game)
+{
+	game->map_width = map_width_check(game->map[0]);
+		// haritanın genişliğini atadık.
+	game->mlx = mlx_init();
+	if (!game->mlx)
+		ft_error("mlx_init failed!");
+
+	game->win = mlx_new_window(game->mlx, game->map_width * TILE_SIZE,
+			game->map_height * TILE_SIZE, "so_long");
+	if (!game->win)
+		ft_error("mlx_new_window failed!");
+}
+
+void	ft_error(char *msg)
+{
+	ft_putendl_fd("Error", 2);
+	ft_putendl_fd(msg, 2);
+	exit(EXIT_FAILURE);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   map_check.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/10 19:06:40 by nedogan           #+#    #+#             */
+/*   Updated: 2025/08/12 11:24:45 by nedogan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "so_long.h"
+
+int	map_width_check(char *s)
+{
+	int	i;
+
+	i = 0;
+	if (!s)
+		return (0);
+	while (s[i] && s[i] != '\n')
+		i++;
+	return (i);
+}
+// void return (int) yaparak deneyelim. çalışıyor
+int	check_map_format(t_game *game)
+{
+	int res;
+	int	i;
+	int	width;
+
+	res = 1;
+	width = map_width_check(game->map[0]);
+	game->map_width = width;
+	i = 1;
+	while (game->map[i])
+	{
+		if (map_width_check(game->map[i]) != width)
+		{
+			ft_error("Map is not rectangular! line length are different.");
+			res = 0;
+			return (res);
+		}
+		i++;
+	}
+	return (res);
+}
+
+void	check_chars(t_game *g, int *p, int *e, int *c)
+{
+	int	x;
+	int	y;
+
+	y = -1;
+	while (g->map[++y])
+	{
+		x = -1;
+		while (g->map[y][++x])
+		{
+			if (g->map[y][x] == PLAYER)
+				(*p)++;
+			else if (g->map[y][x] == EXIT)
+				(*e)++;
+			else if (g->map[y][x] == COIN)
+				(*c)++;
+			else if (g->map[y][x] != WALL && g->map[y][x] != FLOOR
+				&& g->map[y][x] != ENEMY)
+				ft_error("Unvalid character!");
+		}
+	}
+}
+
+void	check_walls(t_game *g)
+{
+	int	x;
+	int	y;
+
+	y = -1;
+	while (g->map[++y])
+	{
+		x = -1;
+		while (g->map[y][++x])
+		{
+			if ((y == 0 || y == g->map_height - 1 || x == 0 || x == g->map_width
+					- 1) && g->map[y][x] != WALL)
+				ft_error("Map does not surrounded by walls!");
+		}
+	}
+}
+
+int	check_map(t_game *g)
+{
+	int	player;
+	int	exit;
+	int	coin;
+
+	player = 0;
+	exit = 0;
+	coin = 0;
+	if (!check_map_format(g))
+	{
+		free_map(g->map);
+		return (0);
+	}
+	check_chars(g, &player, &exit, &coin);
+	check_walls(g);
+	if (player != 1 || exit < 1 || coin < 1)
+		ft_error("There is no or more Player and Exit or no Coin!");
+	g->coin_count = coin;
+	return (1);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   map_path.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/10 19:06:46 by nedogan           #+#    #+#             */
+/*   Updated: 2025/08/11 12:00:55 by nedogan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "so_long.h"
+
+char	**copy_map(t_game *g)
+{
+	char	**copy;
+	int		i;
+
+	copy = malloc(sizeof(char *) * (g->map_height + 1));
+	if (!copy)
+		return (NULL);
+	i = 0;
+	while (i < g->map_height)
+	{
+		copy[i] = ft_strdup(g->map[i]);
+		i++;
+	}
+	copy[i] = NULL;
+	return (copy);
+}
+
+void	flood_fill(char **map, int y, int x)
+{
+	if (map[y][x] == '1' || map[y][x] == 'S')
+		return ;
+	map[y][x] = 'S';
+	flood_fill(map, y + 1, x);
+	flood_fill(map, y - 1, x);
+	flood_fill(map, y, x + 1);
+	flood_fill(map, y, x - 1);
+}
+
+static int	run_flood_and_check(t_game *g, char **copy)
+{
+	int	i;
+	int	j;
+
+	i = -1;
+	while (++i < g->map_height)
+	{
+		j = -1;
+		while (++j < g->map_width)
+			if (copy[i][j] == 'P')
+				flood_fill(copy, i, j);
+	}
+	i = -1;
+	while (++i < g->map_height)
+	{
+		j = -1;
+		while (++j < g->map_width)
+			if (copy[i][j] == 'C' || copy[i][j] == 'E')
+				return (0);
+	}
+	return (1);
+}
+
+int	count_lines(int fd)
+{
+	int		count;
+	char	*line;
+
+	count = 0;
+	while ((line = get_next_line(fd)))
+	{
+		count++;
+		free(line);
+	}
+	return (count);
+}
+
+int	check_path(t_game *g)
+{
+	char	**copy;
+	int		result;
+
+	copy = copy_map(g);
+	if (!copy)
+		return (0);
+	result = run_flood_and_check(g, copy);
+	free_map(copy);
+	return (result);
+}
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   map.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/10 19:06:50 by nedogan           #+#    #+#             */
+/*   Updated: 2025/08/12 12:12:03 by nedogan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "so_long.h"
+
+static int	get_map_height(char *file)
+{
+	int	fd;
+	int	height;
+
+	fd = open(file, O_RDONLY);
+	if (fd < 0)
+		ft_error("File does not open/read");
+	height = count_lines(fd);
+	close(fd);
+	return (height);
+}
+
+static void	read_map_lines(int fd, char **map, int height)
+{
+	int	i;
+	int	len;
+
+	i = 0;
+	while (i < height)
+	{
+		map[i] = get_next_line(fd);
+		if (map[i])
+		{
+			len = map_width_check(map[i]);
+			map[i][len] = '\0';
+		}
+		i++;
+	}
+	map[i] = NULL;
+	get_next_line(-1);
+}
+
+char	**alloc_map(char *file, int *height)
+{
+	int		fd;
+	char	**map;
+
+	*height = get_map_height(file);
+	fd = open(file, O_RDONLY);
+	if (fd < 0)
+		ft_error("File does not open again!");
+	map = malloc(sizeof(char *) * (*height + 1));
+	if (!map)
+		ft_error("map malloc failed!");
+	read_map_lines(fd, map, *height);
+	close(fd);
+	return (map);
+}
+
+int	load_map(t_game *game, char *filename)
+{
+	int	y;
+	int	x;
+
+	game->map = alloc_map(filename, &game->map_height);
+	if (!game->map)
+		ft_error("Map does not loaded!");
+	check_map(game);
+	y = 0;
+	while (game->map[++y])
+	{
+		x = 0;
+		while (game->map[y][++x])
+		{
+			if (game->map[y][x] == PLAYER)
+			{
+				game->player_x = x;
+				game->player_y = y;
+			}
+		}
+	}
+	return (1);
+}
+
+#include "so_long.h"
+
+void    load_player_frames(t_game *g)
+{
+    int w;
+    int h;
+
+    g->player_frames[0] = mlx_xpm_file_to_image(g->mlx, "textures/player_1.xpm", &w, &h);
+    g->player_frames[1] = mlx_xpm_file_to_image(g->mlx, "textures/player_2.xpm", &w, &h);
+    g->player_frames[2] = mlx_xpm_file_to_image(g->mlx, "textures/player_3.xpm", &w, &h);
+	if (!g->player_frames[0] || !g->player_frames[1] || !g->player_frames[2])
+        ft_error("Failed to load player animation frames");
+}
+
+int animate_player(t_game *g)
+{
+    static int counter = 0;
+
+    counter++;
+    if (counter >= 30) // Hızı ayarlamak için
+    {
+        g->current_frame++;
+        if (g->current_frame >= 3)
+            g->current_frame = 0;
+        counter = 0;
+    }
+    draw_map(g); // Haritayı tekrar çiz
+    return (0);
+}
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   player_utils.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/10 19:06:54 by nedogan           #+#    #+#             */
+/*   Updated: 2025/08/11 15:43:13 by nedogan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "so_long.h"
+
+void	find_player(t_game *g)
+{
+	int	y;
+	int	x;
+
+	y = 0;
+	while (g->map[y])
+	{
+		x = 0;
+		while (g->map[y][x])
+		{
+			if (g->map[y][x] == PLAYER)
+			{
+				g->player_x = x;
+				g->player_y = y;
+				return ;
+			}
+			x++;
+		}
+		y++;
+	}
+}
+
+int	handle_key(int key, t_game *g)
+{
+	if (key == KEY_ESC)
+		exit_game(g);
+	if (key == KEY_W)
+		move_player(g, 0, -1);
+	else if (key == KEY_S)
+		move_player(g, 0, 1);
+	else if (key == KEY_A)
+		move_player(g, -1, 0);
+	else if (key == KEY_D)
+		move_player(g, 1, 0);
+	return (0);
+}
+
+void	print_moves(int moves)
+{
+	ft_putstr_fd("Step: ", 1);
+	ft_putnbr_fd(moves, 1);
+	ft_putchar_fd('\n', 1);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   player.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/10 19:06:58 by nedogan           #+#    #+#             */
+/*   Updated: 2025/08/10 19:24:52 by nedogan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "so_long.h"
+
+static int	check_move(t_game *g, int x, int y)
+{
+	if (y < 0 || y >= g->map_height || x < 0 || x >= g->map_width)
+		return (0);
+	if (g->map[y][x] == WALL)
+		return (0);
+	return (1);
+}
+
+static void	handle_special_tile(t_game *g, int x, int y)
+{
+	if (g->map[y][x] == COIN)
+	{
+		g->coin_count--;
+		g->map[y][x] = FLOOR;
+	}
+	if (g->map[y][x] == EXIT && g->coin_count == 0)
+	{
+		write(1, "You win!\n", 9);
+		exit_game(g);
+	}
+	if (g->map[y][x] == ENEMY)
+	{
+		write(1, "You Lost!\n", 10);
+		exit_game(g);
+	}
+}
+
+static void	update_player(t_game *g, int x, int y)
+{
+	if (g->map[y][x] != EXIT)
+	{
+		g->player_x = x;
+		g->player_y = y;
+		print_moves(++g->move_count);
+		draw_map(g);
+	}
+}
+
+void	move_player(t_game *g, int dx, int dy)
+{
+	int	x;
+	int	y;
+
+	x = g->player_x + dx;
+	y = g->player_y + dy;
+	if (!check_move(g, x, y))
+		return ;
+	handle_special_tile(g, x, y);
+	update_player(g, x, y);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   so_long.h                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/10 19:25:12 by nedogan           #+#    #+#             */
+/*   Updated: 2025/08/12 11:08:54 by nedogan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef SO_LONG_H
+# define SO_LONG_H
+
+# include "get_next_line/get_next_line.h"
+# include "libft/libft.h"
+# include "minilibx-linux/mlx.h"
+# include <fcntl.h>
+# include <stdio.h> // silinecek mi?
+# include <stdlib.h>
+
+# define TILE_SIZE 64
+
+// Keycodes (Linux)
+# define KEY_W 119
+# define KEY_A 97
+# define KEY_S 115
+# define KEY_D 100
+# define KEY_ESC 65307
+
+// Map characters
+# define WALL '1'
+# define FLOOR '0'
+# define ENEMY 'X'
+# define PLAYER 'P'
+# define COIN 'C'
+# define EXIT 'E'
+
+typedef struct s_game
+{
+	void	*mlx;
+	void	*win;
+
+	char	**map;
+	int		map_width;
+	int		map_height;
+
+	void	*img_wall;
+	void	*img_floor;
+	void	*img_enemy;
+	void	*img_player;
+	void	*img_coin;
+	void	*img_exit;
+
+	// Player animasyonu için:
+	void	*player_frames[3];
+	int		current_frame;
+
+	int		player_x;
+	int		player_y;
+	int		coin_count;
+	int		move_count;
+
+}			t_game;
+
+int			load_map(t_game *game, char *filename);
+void		free_map(char **map);
+void		free_images(t_game *g);
+
+void		ft_error(char *msg);
+int			map_width_check(char *s);
+int			check_map(t_game *g);
+
+void		load_images(t_game *g);
+void		draw_tile(t_game *g, void *img, int x, int y);
+void		draw_map(t_game *g);
+void		print_moves(int moves);
+void		find_player(t_game *g);
+
+int			handle_key(int key, t_game *g);
+int			exit_game(t_game *g);
+int			check_path(t_game *g);
+int			count_lines(int fd);
+void		check_walls(t_game *g);
+void		check_chars(t_game *g, int *p, int *e, int *c);
+int		check_map_format(t_game *game);
+void		flood_fill(char **map, int y, int x);
+char		**alloc_map(char *file, int *height);
+void		move_player(t_game *g, int dx, int dy);
+void		game_init(t_game *game);
+
+void		load_player_frames(t_game *g);
+int			animate_player(t_game *g);
+
+#endif
+
+nedogan@nedogan-BOHK-WAX9X:~/Desktop/sezai/so_long_animation_OK$ valgrind --track-origins=yes ./so_long maps/map.ber
+==22264== Memcheck, a memory error detector
+==22264== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==22264== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==22264== Command: ./so_long maps/map.ber
+==22264==
+==22264== Syscall param writev(vector[0]) points to uninitialised byte(s)
+==22264==    at 0x4AE3864: writev (writev.c:26)
+==22264==    by 0x4BDAACA: ??? (in /usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0)
+==22264==    by 0x4BDAC4E: ??? (in /usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0)
+==22264==    by 0x4BDBD7E: xcb_writev (in /usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0)
+==22264==    by 0x48BE0B8: _XSend (in /usr/lib/x86_64-linux-gnu/libX11.so.6.4.0)
+==22264==    by 0x48C3148: _XReadEvents (in /usr/lib/x86_64-linux-gnu/libX11.so.6.4.0)
+==22264==    by 0x48C352B: XWindowEvent (in /usr/lib/x86_64-linux-gnu/libX11.so.6.4.0)
+==22264==    by 0x111415: mlx_int_wait_first_expose (in /home/nedogan/Desktop/sezai/so_long_animation_OK/so_long)
+==22264==    by 0x111125: mlx_new_window (in /home/nedogan/Desktop/sezai/so_long_animation_OK/so_long)
+==22264==    by 0x10EBB2: game_init (main.c:59)
+==22264==    by 0x10EA6A: main (main.c:40)
+==22264==  Address 0x4c4616c is 28 bytes inside a block of size 16,384 alloc'd
+==22264==    at 0x484D953: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==22264==    by 0x48AD42D: XOpenDisplay (in /usr/lib/x86_64-linux-gnu/libX11.so.6.4.0)
+==22264==    by 0x110ED6: mlx_init (in /home/nedogan/Desktop/sezai/so_long_animation_OK/so_long)
+==22264==    by 0x10EB62: game_init (main.c:56)
+==22264==    by 0x10EA6A: main (main.c:40)
+==22264==  Uninitialised value was created by a stack allocation
+==22264==    at 0x111320: mlx_int_anti_resize_win (in /home/nedogan/Desktop/sezai/so_long_animation_OK/so_long)
+==22264==
+Step: 1
+Step: 2
+Step: 3
+Step: 4
+Step: 5
+You Lost!
+free images
+window destroyed
+display destroyed
+==22264==
+==22264== HEAP SUMMARY:
+==22264==     in use at exit: 0 bytes in 0 blocks
+==22264==   total heap usage: 305,916 allocs, 305,916 frees, 250,066,784 bytes allocated
+==22264==
+==22264== All heap blocks were freed -- no leaks are possible
+==22264==
+==22264== For lists of detected and suppressed errors, rerun with: -s
+==22264== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
