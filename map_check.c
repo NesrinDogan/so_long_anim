@@ -6,7 +6,7 @@
 /*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/10 19:06:40 by nedogan           #+#    #+#             */
-/*   Updated: 2025/08/12 11:24:45 by nedogan          ###   ########.fr       */
+/*   Updated: 2025/08/13 19:42:05 by nedogan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,9 @@ int	map_width_check(char *s)
 // void return (int) yaparak deneyelim. çalışıyor
 int	check_map_format(t_game *game)
 {
-	int res;
 	int	i;
 	int	width;
 
-	res = 1;
 	width = map_width_check(game->map[0]);
 	game->map_width = width;
 	i = 1;
@@ -39,12 +37,11 @@ int	check_map_format(t_game *game)
 		if (map_width_check(game->map[i]) != width)
 		{
 			ft_error("Map is not rectangular! line length are different.");
-			res = 0;
-			return (res);
+			return (0);
 		}
 		i++;
 	}
-	return (res);
+	return (1);
 }
 
 void	check_chars(t_game *g, int *p, int *e, int *c)
@@ -99,10 +96,7 @@ int	check_map(t_game *g)
 	exit = 0;
 	coin = 0;
 	if (!check_map_format(g))
-	{
-		free_map(g->map);
 		return (0);
-	}
 	check_chars(g, &player, &exit, &coin);
 	check_walls(g);
 	if (player != 1 || exit < 1 || coin < 1)

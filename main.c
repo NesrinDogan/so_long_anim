@@ -6,7 +6,7 @@
 /*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/10 19:06:34 by nedogan           #+#    #+#             */
-/*   Updated: 2025/08/12 21:45:49 by nedogan          ###   ########.fr       */
+/*   Updated: 2025/08/13 19:41:28 by nedogan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,14 +30,15 @@ int	main(int argc, char **argv)
 		ft_error("Usage: ./so_long <map.ber>");
 	if (!ft_strnstr(argv[1], ".ber", ft_strlen(argv[1])))
 		ft_error("Map file name has to finish with .ber");
-	load_map(&game, argv[1]);
+	if (!load_map(&game, argv[1]))
+		exit_game(&game);
 	find_player(&game);
 	if (!check_path(&game))
 	{
 		ft_error("Invalid path in map!");
 		exit_game(&game);
 	}
-	
+
 	game_init(&game);
 	load_player_frames(&game);
 	draw_map(&game); // haritayı çizimi
@@ -68,5 +69,4 @@ void	ft_error(char *msg)
 {
 	ft_putendl_fd("Error", 2);
 	ft_putendl_fd(msg, 2);
-	exit(EXIT_FAILURE);
 }

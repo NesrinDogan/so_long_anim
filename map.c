@@ -6,7 +6,7 @@
 /*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/10 19:06:50 by nedogan           #+#    #+#             */
-/*   Updated: 2025/08/12 12:12:03 by nedogan          ###   ########.fr       */
+/*   Updated: 2025/08/13 19:40:09 by nedogan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ static void	read_map_lines(int fd, char **map, int height)
 		i++;
 	}
 	map[i] = NULL;
-	get_next_line(-1);
 }
 
 char	**alloc_map(char *file, int *height)
@@ -70,7 +69,8 @@ int	load_map(t_game *game, char *filename)
 	game->map = alloc_map(filename, &game->map_height);
 	if (!game->map)
 		ft_error("Map does not loaded!");
-	check_map(game);
+	if (!check_map(game))
+		return (0);
 	y = 0;
 	while (game->map[++y])
 	{
