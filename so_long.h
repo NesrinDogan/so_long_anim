@@ -6,7 +6,7 @@
 /*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/10 19:25:12 by nedogan           #+#    #+#             */
-/*   Updated: 2025/08/12 11:08:54 by nedogan          ###   ########.fr       */
+/*   Updated: 2025/08/15 10:07:25 by nedogan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ int			check_path(t_game *g);
 int			count_lines(int fd);
 void		check_walls(t_game *g);
 void		check_chars(t_game *g, int *p, int *e, int *c);
-int		check_map_format(t_game *game);
+int			check_map_format(t_game *game);
 void		flood_fill(char **map, int y, int x);
 char		**alloc_map(char *file, int *height);
 void		move_player(t_game *g, int dx, int dy);
@@ -92,5 +92,9 @@ void		game_init(t_game *game);
 
 void		load_player_frames(t_game *g);
 int			animate_player(t_game *g);
+
+int			is_map_valid(t_game *g);
+void		ft_map_error(char *msg, t_game *g);
+void		cleanup_game(t_game *g);
 
 #endif

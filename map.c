@@ -6,7 +6,7 @@
 /*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/10 19:06:50 by nedogan           #+#    #+#             */
-/*   Updated: 2025/08/12 12:12:03 by nedogan          ###   ########.fr       */
+/*   Updated: 2025/08/15 10:09:40 by nedogan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ static int	get_map_height(char *file)
 
 	fd = open(file, O_RDONLY);
 	if (fd < 0)
-		ft_error("File does not open/read");
+		ft_error("File does not open.");
 	height = count_lines(fd);
 	close(fd);
 	return (height);
@@ -54,7 +54,7 @@ char	**alloc_map(char *file, int *height)
 	fd = open(file, O_RDONLY);
 	if (fd < 0)
 		ft_error("File does not open again!");
-	map = malloc(sizeof(char *) * (*height + 1));
+	map = malloc(sizeof(char *) * (*height + 1));    ///
 	if (!map)
 		ft_error("map malloc failed!");
 	read_map_lines(fd, map, *height);
@@ -67,7 +67,7 @@ int	load_map(t_game *game, char *filename)
 	int	y;
 	int	x;
 
-	game->map = alloc_map(filename, &game->map_height);
+	game->map = alloc_map(filename, &game->map_height);   ///
 	if (!game->map)
 		ft_error("Map does not loaded!");
 	check_map(game);

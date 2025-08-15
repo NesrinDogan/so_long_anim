@@ -6,7 +6,7 @@
 /*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/10 19:06:40 by nedogan           #+#    #+#             */
-/*   Updated: 2025/08/12 11:24:45 by nedogan          ###   ########.fr       */
+/*   Updated: 2025/08/15 10:16:27 by nedogan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int	check_map_format(t_game *game)
 	{
 		if (map_width_check(game->map[i]) != width)
 		{
-			ft_error("Map is not rectangular! line length are different.");
+			ft_map_error("Map is not rectangular!", game);
 			res = 0;
 			return (res);
 		}
@@ -66,7 +66,7 @@ void	check_chars(t_game *g, int *p, int *e, int *c)
 				(*c)++;
 			else if (g->map[y][x] != WALL && g->map[y][x] != FLOOR
 				&& g->map[y][x] != ENEMY)
-				ft_error("Unvalid character!");
+				ft_map_error("Unvalid character!", g);
 		}
 	}
 }
@@ -84,7 +84,7 @@ void	check_walls(t_game *g)
 		{
 			if ((y == 0 || y == g->map_height - 1 || x == 0 || x == g->map_width
 					- 1) && g->map[y][x] != WALL)
-				ft_error("Map does not surrounded by walls!");
+				ft_map_error("Map does not surrounded by walls!", g);
 		}
 	}
 }
@@ -106,7 +106,7 @@ int	check_map(t_game *g)
 	check_chars(g, &player, &exit, &coin);
 	check_walls(g);
 	if (player != 1 || exit < 1 || coin < 1)
-		ft_error("There is no or more Player and Exit or no Coin!");
+		ft_map_error("There is no or more Player and Exit or no Coin!", g);
 	g->coin_count = coin;
 	return (1);
 }

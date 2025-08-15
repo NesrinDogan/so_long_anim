@@ -1,7 +1,7 @@
 NAME 		= so_long
 
 CC			= cc
-CFLAGS		= -Wall -Wextra -Werror -g
+CFLAGS		= -Wall -Wextra -Werror -g #-g silinecek
 
 MAKEFLAGS += --no-print-directory
 
@@ -13,10 +13,15 @@ MLX			= $(MLX_DIR)/libmlx.a
 LIBFT		= $(LIBFT_DIR)/libft.a
 GNL			= $(GNL_DIR)/gnl.a
 
-SRC			= main.c map.c player_anim.c draw_map.c player.c player_utils.c map_check.c map_path.c free_all.c
+SRC			= main.c helper.c map.c player_anim.c draw_map.c player.c player_utils.c map_check.c map_path.c free_all.c
 OBJ			= $(SRC:.c=.o)
 
+MLX_CONFIG	= $(MLX_DIR)/Makefile.gen
+
 all: $(NAME)
+
+$(MLX_CONFIG):
+	@cd $(MLX_DIR) && ./configure
 
 $(NAME): $(OBJ)
 	@make -C $(LIBFT_DIR)
