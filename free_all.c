@@ -38,8 +38,10 @@ int	exit_game(t_game *g)
 {
 	if (g->map)
 		free_map(g->map);
-	mlx_loop_end(g->mlx);
-	free_images(g); // Önce tüm img’leri temizle
+	if (g->mlx)
+		mlx_loop_end(g->mlx);
+	if (g->img_wall)
+		free_images(g); // Önce tüm img’leri temizle
 	if (g->win)
 	{
 		printf("window destroyed \n");
@@ -51,6 +53,6 @@ int	exit_game(t_game *g)
 		mlx_destroy_display(g->mlx);
 		free(g->mlx);
 	}
-	
+	get_next_line(-1);
 	exit(0);
 }
