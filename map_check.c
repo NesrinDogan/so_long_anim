@@ -6,11 +6,7 @@
 /*   By: nedogan <nedogan@42istanbul.student.com.tr +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/10 19:06:40 by nedogan           #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2025/08/15 10:16:27 by nedogan          ###   ########.fr       */
-=======
-/*   Updated: 2025/08/13 19:42:05 by nedogan          ###   ########.fr       */
->>>>>>> 85e0075e1b9d7a368e12b958d31a4827ee13ed50
+/*   Updated: 2025/08/15 10:27:42 by nedogan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,14 +36,8 @@ int	check_map_format(t_game *game)
 	{
 		if (map_width_check(game->map[i]) != width)
 		{
-<<<<<<< HEAD
-			ft_map_error("Map is not rectangular!", game);
-			res = 0;
-			return (res);
-=======
 			ft_error("Map is not rectangular! line length are different.");
 			return (0);
->>>>>>> 85e0075e1b9d7a368e12b958d31a4827ee13ed50
 		}
 		i++;
 	}
